@@ -12,7 +12,7 @@ defmodule Foxes do
         counts: Integer.parse(HTTPoison.get!("https://foxes.cool/counts/" <> name).body) |> elem(0),
       }})
     end
-    params = Enum.map_join(object, "&", fn {key, value} -> "#{key}" <> "=" <> Kernel.inspect(value) end)
+    params = Enum.map_join(object, "&", fn {key, value} -> "#{key}" <> "=" <> "#{value}" end)
     id = :rand.uniform((:ets.lookup(:foxes_table, name) |> List.first |> elem(1))[:counts])-1
     url = "https://img.foxes.cool/" <> name <> "/" <> Integer.to_string(id) <> ".jpg"
     if params == "" do
