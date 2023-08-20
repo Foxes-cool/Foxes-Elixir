@@ -1,18 +1,19 @@
-:ets.new(:buckets_registry, [:named_table])
-
 HTTPoison.start
 
 defmodule Foxes do
   defp _internal(name, object) do
+    if :ets.whereis(:foxes_table) == :undefined do
+      :ets.new(:foxes_table, [:named_table])
+    end
     time = floor(:os.system_time(:second)/86400)
-    if :ets.lookup(:buckets_registry, name) == [] || :ets.lookup(:buckets_registry, name)[:time] != time do
-      :ets.insert(:buckets_registry, {name, %{
+    if :ets.lookup(:foxes_table, name) == [] || :ets.lookup(:foxes_table, name)[:time] != time do
+      :ets.insert(:foxes_table, {name, %{
         time: time,
         counts: Integer.parse(HTTPoison.get!("https://foxes.cool/counts/" <> name).body) |> elem(0),
       }})
     end
     params = Enum.map_join(object, "&", fn {key, value} -> "#{key}" <> "=" <> Kernel.inspect(value) end)
-    id = :rand.uniform((:ets.lookup(:buckets_registry, name) |> List.first |> elem(1))[:counts])-1
+    id = :rand.uniform((:ets.lookup(:foxes_table, name) |> List.first |> elem(1))[:counts])-1
     url = "https://img.foxes.cool/" <> name <> "/" <> Integer.to_string(id) <> ".jpg"
     if params == "" do
       url
